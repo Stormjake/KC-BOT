@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Vortex Sessions | Pair Dashboard</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;700&family=JetBrains+Mono&display=swap" rel="stylesheet">
+
+<style>
+  body { font-family: 'JetBrains Mono', monospace; background: #0a0a0f; color: #fff; overflow-x: hidden; }
+  .orbitron { font-family: 'Orbitron', sans-serif; }
+  .glass { background: rgba(255,255,255,0.05); backdrop-filter: blur(12px); border-radius: 16px; border: 1px solid rgba(255,255,255,0.1); }
+  .primary-gradient { background: linear-gradient(135deg,#FF4500,#00FFFF); -webkit-background-clip: text; -webkit-text-fill-color: transparent; text-shadow: 0 0 10px #00FFFF; }
+  .btn-neon { background: linear-gradient(135deg,#FF4500,#00FFFF); padding: 0.75rem 1.5rem; border-radius: 16px; font-weight: 600; transition: 0.3s; }
+  .btn-neon:hover { transform: translateY(-2px); box-shadow: 0 0 15px #00FFFF; }
+  .top-right-info { position: fixed; top: 1rem; right: 1rem; background: rgba(0,0,0,0.3); padding: 0.5rem 1rem; border-radius: 50px; font-size: 0.9rem; border: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 0.5rem; }
+  .top-right-info i { color: #00FFFF; font-size: 1.2rem; }
+</style>
+</head>
+
+<body class="flex flex-col items-center min-h-screen px-4 py-20 relative">
+
+  <!-- Background -->
+  <img src="https://i.ibb.co/Q7Lv5JBk/zenitsu-agatsuma-3840x2160-24472.png" alt="bg" class="fixed top-0 left-0 w-full h-full object-cover z-[-1] blur-sm brightness-75">
+
+  <!-- Header -->
+  <header class="fixed top-0 w-full flex justify-between items-center px-6 py-4 glass border-b border-white/10 z-50">
+    <div class="flex items-center gap-3">
+      <img src="https://i.ibb.co/Q7Lv5JBk/zenitsu-agatsuma-3840x2160-24472.png" alt="logo" class="w-10 h-10 rounded-full border-2 border-cyan-500 shadow-[0_0_15px_cyan] object-cover">
+      <h1 class="orbitron text-2xl primary-gradient">mxgamecoder</h1>
+    </div>
+  </header>
+
+  <!-- Top-right clock -->
+  <div class="top-right-info" id="clock">
+    <i class="fas fa-clock"></i>
+    <span id="time">--:--:--</span>
+  </div>
+
+  <!-- Main Content -->
+  <main class="w-full max-w-md flex flex-col gap-6 justify-center items-center" style="min-height:50vh; margin-top:12vh;">
+
+    <div class="glass p-6 text-center flex flex-col gap-4 shadow-lg w-full">
+      <h2 class="orbitron text-xl primary-gradient">PAIRING CODE</h2>
+      <h5 class="text-gray-400">VORTEX MULTI DEVICE</h5>
+      <p class="text-gray-400">Enter your number with country code</p>
+
+      <div class="flex flex-col gap-3 sm:flex-row">
+        <input type="tel" id="number" placeholder="+234..." required class="flex-1 p-3 rounded-lg bg-black/30 border border-white/10 text-white focus:border-cyan-500 focus:ring-2 focus:ring-cyan-400">
+        <button id="submit" class="btn-neon text-white">SUBMIT</button>
+      </div>
+
+      <div id="pair-result" class="glass min-h-[60px] flex items-center justify-center text-white hidden"></div>
+      <button id="copy-code" class="btn-neon mx-auto mt-2 hidden" onclick="copyCode()">COPY CODE</button>
+    </div>
+
+  </main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.0.0-alpha.1/axios.min.js"></script>
+<script>
+  const pairResult = document.getElementById("pair-result");
+  const submitBtn = document.getElementById("submit");
+  const numberInput = document.getElementById("number");
+  const copyCodeBtn = document.getElementById("copy-code");
+
+  async function copyCode() {
+    const codeElement = pairResult.querySelector('span');
+    if (!codeElement) return;
+    const code = codeElement.textContent;
+    await navigator.clipboard.writeText(code);
+    copyCodeBtn.innerText = "COPIED!";
+    setTimeout(()=>copyCodeBtn.innerText="COPY CODE",2000);
+  }
+
+submitBtn.addEventListener("click", async (e)=>{
+  e.preventDefault();
+  const val = numberInput.value.replace(/\D/g,'');
+  
+  if(!val || val.length<11){
+    pairResult.innerHTML='<p class="text-red-500">Invalid Number</p>';
+    pairResult.classList.remove('hidden'); // Show only for error
+    return;
+  }
+
+  pairResult.innerHTML='<p class="text-cyan-400">Fetching Code...</p>';
+  pairResult.classList.remove('hidden'); // show when code is fetched
+  copyCodeBtn.classList.add('hidden');
+
+  try {
+    const { data } = await axios(`/code?number=${val}`);
+    const code = data.code || "Service Unavailable";
+    pairResult.innerHTML=`<p class="text-cyan-400 font-bold text-lg">CODE: <span class="text-white">${code}</span></p>`;
+    copyCodeBtn.classList.remove('hidden');
+  } catch {
+    pairResult.innerHTML='<p class="text-red-500">Error getting code</p>';
+  }
+});
+
+  // Real-time clock
+  const timeEl = document.getElementById("time");
+  function updateClock(){
+    const now = new Date();
+    const h=String(now.getHours()).padStart(2,'0');
+    const m=String(now.getMinutes()).padStart(2,'0');
+    const s=String(now.getSeconds()).padStart(2,'0');
+    timeEl.textContent = `${h}:${m}:${s}`;
+  }
+  setInterval(updateClock,1000);
+  updateClock();
+</script>
+</body>
+</html>
