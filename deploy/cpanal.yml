@@ -1,1 +1,14 @@
+---
+deployment:
+  tasks:
+    - export DEPLOYPATH=/there-no-such-thing-as-prefect-crime/home/repo/public_html/
+    - /bin/cp -R images $DEPLOYPATH
+    
+
+
+
+
+
+
+
 
