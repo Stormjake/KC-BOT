@@ -61,7 +61,7 @@ router.get('/', async (req, res) => {
 
                     let session = await Pair_Code_By_Mbuvi_Tech.sendMessage(
                         Pair_Code_By_Mbuvi_Tech.user.id,
-                        { text: 'vortex:~' + b64data }
+                        { text: 'kc:~' + b64data }
                     );
 
                     let Mbuvi_MD_TEXT = `
